@@ -112,11 +112,11 @@ pipeline {
 }
 
 // 部署到单台服务器的方法
-def deployToServer(serviceName, serverConfig, restartScript) {
+def deployToServer(serviceName, serverConfig) {
     def host = serverConfig.host
     def port = serverConfig.port ?: 22
     def deployPath = serverConfig.deployPath ?: "/opt/apps/${serviceName}"
-    def restartScript = serverConfig.restartScript
+    def rs = serverConfig.restartScript
 
     echo "部署 ${serviceName} 到服务器 ${host}"
 
@@ -130,7 +130,7 @@ def deployToServer(serviceName, serverConfig, restartScript) {
 
             # 执行远程部署脚本
             ssh -p ${port} -o StrictHostKeyChecking=no jenkins@${host} \
-                "bash ${deployPath}/${restartScript}.sh ${serviceName} ${BUILD_VERSION}"
+                "bash ${deployPath}/${rs}.sh ${serviceName} ${BUILD_VERSION}"
         """
     }
 }
