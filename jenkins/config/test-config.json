@@ -1,0 +1,15 @@
+{
+  "services": {
+    "limbo-api-gateway": {
+      "servers": [
+        {
+          "host": "13.112.127.198",
+          "port": 22,
+          "deployPath": "/home/ec2-user/nokex-app",
+          "restartScript": "restart-nokex-api-gateway",
+          "appPort": 8081
+        }
+      ]
+    }
+  }
+}
