@@ -9,7 +9,7 @@ pipeline {
     environment {
         // 构建信息
         BUILD_VERSION = "${BUILD_ID}-${env.BUILD_TIMESTAMP}"
-        REPO_URL = 'https://github.com/backend-ex/spot-main.git'
+        REPO_URL = 'git@github.com:backend-ex/spot-main.git'
 
         // 根据不同环境设置变量
         DEPLOY_CONFIG = readJSON file: "jenkins/configs/test-config.json"
