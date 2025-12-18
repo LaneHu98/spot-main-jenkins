@@ -38,7 +38,7 @@ pipeline {
                     extensions: [],
                     userRemoteConfigs: [[
                         url: REPO_URL,
-                        credentialsId: 'git-credentials'
+                        credentialsId: 'github-jenkins-key'
                     ]]
                 ])
 
