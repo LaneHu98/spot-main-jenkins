@@ -100,16 +100,15 @@ pipeline {
                         servicesToDeploy = [env.SINGLE_SERVICE]
                     }
 
+                    def serviceDirectoryMapping = readJSON file: 'jenkins/configs/service-directory-mapping.json'
+
                     servicesToDeploy.each { serviceName ->
                         stage("构建 ${serviceName}") {
-                            echo "开始构建服务: ${serviceName}"
-                            def deployConfig = readJSON file: "jenkins/configs/test-config.json"
-                            def servers = deployConfig.services[serviceName]?.servers ?: []
-                            if (servers.isEmpty()) {
-                                echo "警告: ${serviceName} 在 test 环境中没有配置服务器"
-                                return
-                            }
-                            dir("${server.projectPath}/${serviceName}") {
+                            // 根据服务名获取对应目录
+                            def serviceDir = serviceDirectoryMapping[serviceName] ?: serviceName
+
+                            echo "开始构建服务: ${serviceName}，对应目录: ${serviceDir}"
+                            dir("${serviceDir}/${serviceName}") {
                                 if (params.SKIP_TESTS) {
                                     sh "mvn clean package -DskipTests"
                                 } else {

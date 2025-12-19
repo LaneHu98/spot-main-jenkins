@@ -1,0 +1,17 @@
+{
+  "limbo-api-gateway":  "limbo-gateway/",
+  "limbo-active-service": "limbo-service/",
+  "limbo-agent-service": "limbo-service/",
+  "limbo-channel-admin-service": "limbo-service/",
+  "limbo-financial-service": "limbo-service/",
+  "limbo-future-admin-service": "limbo-service/",
+  "limbo-future-rebate-service": "limbo-service/",
+  "limbo-member-api-service": "limbo-service/",
+  "limbo-mmcorporate-service": "limbo-service/",
+  "limbo-open-api-service": "limbo-service/",
+  "limbo-option-service": "limbo-service/",
+  "limbo-p2p-service": "limbo-service/",
+  "limbo-persission-service": "limbo-service/",
+  "limbo-robot-normal-service": "limbo-service/",
+  "limbo-user-service": "limbo-service/"
+}
