@@ -12,7 +12,8 @@ pipeline {
         REPO_URL = 'git@github.com:backend-ex/spot-main.git'
 
         // 根据不同环境设置变量
-        DEPLOY_CONFIG = readJSON file: "jenkins/configs/test-config.json"
+        // 不再将 JSON 对象存储在环境变量中
+        // DEPLOY_CONFIG = readJSON file: "jenkins/configs/test-config.json"
     }
 
     stages {
@@ -86,11 +87,12 @@ pipeline {
                         // 使用单个服务
                         servicesToDeploy = [env.SINGLE_SERVICE]
                     }
-                    
+
                     servicesToDeploy.each { serviceName ->
                         stage("构建 ${serviceName}") {
                             echo "开始构建服务: ${serviceName}"
-                            def servers = DEPLOY_CONFIG.services[serviceName]?.servers ?: []
+                            def deployConfig = readJSON file: "jenkins/configs/test-config.json"
+                            def servers = deployConfig.services[serviceName]?.servers ?: []
                             if (servers.isEmpty()) {
                                 echo "警告: ${serviceName} 在 test 环境中没有配置服务器"
                                 return
@@ -134,8 +136,9 @@ pipeline {
                     
                     servicesToDeploy.each { serviceName ->
                         stage("部署 ${serviceName}") {
+                            def deployConfig = readJSON file: "jenkins/configs/test-config.json"
                             // 获取该服务的服务器列表
-                            def servers = DEPLOY_CONFIG.services[serviceName]?.servers ?: []
+                            def servers = deployConfig.services[serviceName]?.servers ?: []
                             if (servers.isEmpty()) {
                                 echo "警告: ${serviceName} 在 test 环境中没有配置服务器"
                                 return
