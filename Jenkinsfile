@@ -26,11 +26,18 @@ pipeline {
                     // 读取服务配置
                     def servicesConfig = readJSON file: 'jenkins/configs/services.json'
                     def allServices = servicesConfig.collect { it.toString() }
-                    env.SERVICES_TO_DEPLOY = params.SERVICE_NAME == 'ALL' ? allServices : [params.SERVICE_NAME]
+                    
+                    // 正确处理 ALL 参数或者单个服务参数
+                    if (params.SERVICE_NAME == 'ALL') {
+                        env.SERVICES_TO_DEPLOY = groovy.json.JsonOutput.toJson(allServices)
+                    } else {
+                        // 单个服务也要构造成JSON数组格式
+                        env.SERVICES_TO_DEPLOY = groovy.json.JsonOutput.toJson([params.SERVICE_NAME])
+                    }
                     
                     // 调试信息
                     echo "所有服务: ${allServices}"
-                    echo "当前部署服务: ${env.SERVICES_TO_DEPLOY}"
+                    echo "当前部署服务(JSON格式): ${env.SERVICES_TO_DEPLOY}"
                 }
             }
         }
@@ -65,18 +72,13 @@ pipeline {
         stage('服务构建') {
             steps {
                 script {
-                    // 确保 SERVICES_TO_DEPLOY 是正确的数组格式
-                    def servicesToDeploy = env.SERVICES_TO_DEPLOY instanceof String ? 
-                                          new groovy.json.JsonSlurper().parseText(env.SERVICES_TO_DEPLOY) : 
-                                          env.SERVICES_TO_DEPLOY
+                    // 正确解析环境变量中的JSON数组
+                    def servicesToDeploy = new groovy.json.JsonSlurper().parseText(env.SERVICES_TO_DEPLOY)
                     
                     servicesToDeploy.each { serviceName ->
-                        // 确保 serviceName 是字符串而非数组
-                        def service = serviceName instanceof String ? serviceName : serviceName.toString()
-                        
-                        stage("构建 ${service}") {
-                            echo "开始构建服务: ${service}"
-                            dir("services/${service}") {
+                        stage("构建 ${serviceName}") {
+                            echo "开始构建服务: ${serviceName}"
+                            dir("services/${serviceName}") {
                                 if (params.SKIP_TESTS) {
                                     sh "mvn clean package -DskipTests"
                                 } else {
@@ -88,9 +90,9 @@ pipeline {
 
                                 // 生成部署包
                                 sh """
-                                    mkdir -p ${WORKSPACE}/deploy-packages/${service}
-                                    cp target/*.jar ${WORKSPACE}/deploy-packages/${service}/
-                                    cp src/main/resources/application-prod.properties ${WORKSPACE}/deploy-packages/${service}/ 2>/dev/null || true
+                                    mkdir -p ${WORKSPACE}/deploy-packages/${serviceName}
+                                    cp target/*.jar ${WORKSPACE}/deploy-packages/${serviceName}/
+                                    cp src/main/resources/application-prod.properties ${WORKSPACE}/deploy-packages/${serviceName}/ 2>/dev/null || true
                                 """
                             }
                         }
@@ -102,26 +104,21 @@ pipeline {
         stage('分发部署') {
             steps {
                 script {
-                    // 确保 SERVICES_TO_DEPLOY 是正确的数组格式
-                    def servicesToDeploy = env.SERVICES_TO_DEPLOY instanceof String ? 
-                                          new groovy.json.JsonSlurper().parseText(env.SERVICES_TO_DEPLOY) : 
-                                          env.SERVICES_TO_DEPLOY
+                    // 正确解析环境变量中的JSON数组
+                    def servicesToDeploy = new groovy.json.JsonSlurper().parseText(env.SERVICES_TO_DEPLOY)
                     
                     servicesToDeploy.each { serviceName ->
-                        // 确保 serviceName 是字符串而非数组
-                        def service = serviceName instanceof String ? serviceName : serviceName.toString()
-                        
-                        stage("部署 ${service}") {
+                        stage("部署 ${serviceName}") {
                             // 获取该服务的服务器列表
-                            def servers = DEPLOY_CONFIG.services[service]?.servers ?: []
+                            def servers = DEPLOY_CONFIG.services[serviceName]?.servers ?: []
                             if (servers.isEmpty()) {
-                                echo "警告: ${service} 在 test 环境中没有配置服务器"
+                                echo "警告: ${serviceName} 在 test 环境中没有配置服务器"
                                 return
                             }
 
                             servers.each { server ->
-                                stage("部署到 ${server}") {
-                                    deployToServer(service, server)
+                                stage("部署到 ${server.host}:${server.port}") {
+                                    deployToServer(serviceName, server)
                                 }
                             }
                         }
