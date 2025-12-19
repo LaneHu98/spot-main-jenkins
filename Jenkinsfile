@@ -27,17 +27,21 @@ pipeline {
                     def servicesConfig = readJSON file: 'jenkins/configs/services.json'
                     def allServices = servicesConfig.collect { it.toString() }
                     
-                    // 正确处理 ALL 参数或者单个服务参数
+                    // 正确处理 ALL 参数或者单个服务参数，避免使用被拒绝的toJson方法
                     if (params.SERVICE_NAME == 'ALL') {
-                        env.SERVICES_TO_DEPLOY = groovy.json.JsonOutput.toJson(allServices)
+                        // 直接在环境中存储所有服务的字符串表示
+                        env.ALL_SERVICES = "true"
+                        env.SINGLE_SERVICE = ""
                     } else {
-                        // 单个服务也要构造成JSON数组格式
-                        env.SERVICES_TO_DEPLOY = groovy.json.JsonOutput.toJson([params.SERVICE_NAME])
+                        // 存储单个服务
+                        env.ALL_SERVICES = "false"
+                        env.SINGLE_SERVICE = params.SERVICE_NAME
                     }
                     
                     // 调试信息
                     echo "所有服务: ${allServices}"
-                    echo "当前部署服务(JSON格式): ${env.SERVICES_TO_DEPLOY}"
+                    echo "部署全部服务: ${env.ALL_SERVICES}"
+                    echo "单个服务: ${env.SINGLE_SERVICE}"
                 }
             }
         }
@@ -72,8 +76,16 @@ pipeline {
         stage('服务构建') {
             steps {
                 script {
-                    // 正确解析环境变量中的JSON数组
-                    def servicesToDeploy = new groovy.json.JsonSlurper().parseText(env.SERVICES_TO_DEPLOY)
+                    // 根据环境变量决定要部署的服务
+                    def servicesToDeploy
+                    if (env.ALL_SERVICES == "true") {
+                        // 读取所有服务
+                        def servicesConfig = readJSON file: 'jenkins/configs/services.json'
+                        servicesToDeploy = servicesConfig.collect { it.toString() }
+                    } else {
+                        // 使用单个服务
+                        servicesToDeploy = [env.SINGLE_SERVICE]
+                    }
                     
                     servicesToDeploy.each { serviceName ->
                         stage("构建 ${serviceName}") {
@@ -104,8 +116,16 @@ pipeline {
         stage('分发部署') {
             steps {
                 script {
-                    // 正确解析环境变量中的JSON数组
-                    def servicesToDeploy = new groovy.json.JsonSlurper().parseText(env.SERVICES_TO_DEPLOY)
+                    // 根据环境变量决定要部署的服务
+                    def servicesToDeploy
+                    if (env.ALL_SERVICES == "true") {
+                        // 读取所有服务
+                        def servicesConfig = readJSON file: 'jenkins/configs/services.json'
+                        servicesToDeploy = servicesConfig.collect { it.toString() }
+                    } else {
+                        // 使用单个服务
+                        servicesToDeploy = [env.SINGLE_SERVICE]
+                    }
                     
                     servicesToDeploy.each { serviceName ->
                         stage("部署 ${serviceName}") {
