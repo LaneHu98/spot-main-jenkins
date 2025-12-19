@@ -27,6 +27,10 @@ pipeline {
                     def servicesConfig = readJSON file: 'jenkins/configs/services.json'
                     def allServices = servicesConfig.collect { it.toString() }
                     env.SERVICES_TO_DEPLOY = params.SERVICE_NAME == 'ALL' ? allServices : [params.SERVICE_NAME]
+                    
+                    // 调试信息
+                    echo "所有服务: ${allServices}"
+                    echo "当前部署服务: ${env.SERVICES_TO_DEPLOY}"
                 }
             }
         }
@@ -61,10 +65,18 @@ pipeline {
         stage('服务构建') {
             steps {
                 script {
-                    env.SERVICES_TO_DEPLOY.each { serviceName ->
-                        stage("构建 ${serviceName}") {
-                            echo "开始构建服务: ${serviceName}"
-                            dir("services/${serviceName}") {
+                    // 确保 SERVICES_TO_DEPLOY 是正确的数组格式
+                    def servicesToDeploy = env.SERVICES_TO_DEPLOY instanceof String ? 
+                                          new groovy.json.JsonSlurper().parseText(env.SERVICES_TO_DEPLOY) : 
+                                          env.SERVICES_TO_DEPLOY
+                    
+                    servicesToDeploy.each { serviceName ->
+                        // 确保 serviceName 是字符串而非数组
+                        def service = serviceName instanceof String ? serviceName : serviceName.toString()
+                        
+                        stage("构建 ${service}") {
+                            echo "开始构建服务: ${service}"
+                            dir("services/${service}") {
                                 if (params.SKIP_TESTS) {
                                     sh "mvn clean package -DskipTests"
                                 } else {
@@ -76,9 +88,9 @@ pipeline {
 
                                 // 生成部署包
                                 sh """
-                                    mkdir -p ${WORKSPACE}/deploy-packages/${serviceName}
-                                    cp target/*.jar ${WORKSPACE}/deploy-packages/${serviceName}/
-                                    cp src/main/resources/application-prod.properties ${WORKSPACE}/deploy-packages/${serviceName}/ 2>/dev/null || true
+                                    mkdir -p ${WORKSPACE}/deploy-packages/${service}
+                                    cp target/*.jar ${WORKSPACE}/deploy-packages/${service}/
+                                    cp src/main/resources/application-prod.properties ${WORKSPACE}/deploy-packages/${service}/ 2>/dev/null || true
                                 """
                             }
                         }
@@ -90,18 +102,26 @@ pipeline {
         stage('分发部署') {
             steps {
                 script {
-                    env.SERVICES_TO_DEPLOY.each { serviceName ->
-                        stage("部署 ${serviceName}") {
+                    // 确保 SERVICES_TO_DEPLOY 是正确的数组格式
+                    def servicesToDeploy = env.SERVICES_TO_DEPLOY instanceof String ? 
+                                          new groovy.json.JsonSlurper().parseText(env.SERVICES_TO_DEPLOY) : 
+                                          env.SERVICES_TO_DEPLOY
+                    
+                    servicesToDeploy.each { serviceName ->
+                        // 确保 serviceName 是字符串而非数组
+                        def service = serviceName instanceof String ? serviceName : serviceName.toString()
+                        
+                        stage("部署 ${service}") {
                             // 获取该服务的服务器列表
-                            def servers = DEPLOY_CONFIG.services[serviceName]?.servers ?: []
+                            def servers = DEPLOY_CONFIG.services[service]?.servers ?: []
                             if (servers.isEmpty()) {
-                                echo "警告: ${serviceName} 在 test 环境中没有配置服务器"
+                                echo "警告: ${service} 在 test 环境中没有配置服务器"
                                 return
                             }
 
                             servers.each { server ->
                                 stage("部署到 ${server}") {
-                                    deployToServer(serviceName, server)
+                                    deployToServer(service, server)
                                 }
                             }
                         }
