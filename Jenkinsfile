@@ -191,7 +191,7 @@ def deployToServer(serviceName, serverConfig) {
 
             # 执行远程部署脚本
             ssh -p ${port} -o StrictHostKeyChecking=no ec2-user@${host} \\
-                "sudo bash /home/ec2-user/nokex/${rs}.sh tmp"
+                "sudo bash /home/ec2-user/nokex-app/${rs}.sh tmp"
         """
     }
 }
