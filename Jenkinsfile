@@ -190,21 +190,27 @@ def deployToServer(serviceName, serverConfig) {
                 ec2-user@${host}:${deployPath}/tmp/
 
             # 执行远程部署脚本
-            ssh -p ${port} -o StrictHostKeyChecking=no ec2-user@${host} /bin/bash << EOF
-                # 进入脚本目录并执行，& 放入后台，获取进程 ID
-                cd ${deployPath}
-                ./${rs}.sh ${serviceName} ${BUILD_VERSION} > /tmp/deploy_${serviceName}.log 2>&1 &
-                SCRIPT_PID=\$!
+            ssh -p ${port} -o StrictHostKeyChecking=no ec2-user@${host} << 'ENDSSH'
+                cd /home/ec2-user/nokex-app
+                # 执行部署脚本并记录PID
+                ./"${rs}".sh tmp > "/tmp/deploy_${serviceName}.log" 2>&1 &
+                DEPLOY_PID=\$!
 
-                # 等待一小段时间，让脚本内部的 Java 进程有机会启动
+                # 等待30秒让Java应用启动
                 sleep 30
 
-                # 现在，找到由这个脚本启动的 tail -f 进程（SCRIPT_PID 的子进程）并终止它
-                # pkill 命令专门用于终止进程，-P 指定父进程
-                pkill -P \$SCRIPT_PID -f "tail -f" || true
+                # 查找并终止tail -f进程
+                TAIL_PID=\$(ps -ef | grep "tail -f" | grep -v grep | awk '{print \$2}')
+                if [ -n "\$TAIL_PID" ]; then
+                    # 检查该进程是否是我们的部署脚本的子进程
+                    PARENT_PID=\$(ps -o ppid= -p "\$TAIL_PID" | tr -d ' ')
+                    if [ "\$PARENT_PID" = "\$DEPLOY_PID" ]; then
+                        kill "\$TAIL_PID" 2>/dev/null && echo "已终止tail -f进程: \$TAIL_PID"
+                    fi
+                fi
 
-                echo "部署脚本已启动，tail -f 进程已被清理。"
-            EOF
+                echo "部署完成，应用已启动。"
+ENDSSH
         """
     }
 }
