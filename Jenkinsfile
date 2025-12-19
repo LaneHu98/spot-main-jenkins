@@ -121,7 +121,7 @@ pipeline {
                                 // 生成部署包
                                 sh """
                                     mkdir -p ${WORKSPACE}/deploy-packages/${serviceName}
-                                    cp target/*.jar ${WORKSPACE}/deploy-packages/${serviceName}/
+                                    cp ../../deploy/*.jar ${WORKSPACE}/deploy-packages/${serviceName}/
                                     cp src/main/resources/application-prod.properties ${WORKSPACE}/deploy-packages/${serviceName}/ 2>/dev/null || true
                                 """
                             }
