@@ -178,7 +178,7 @@ def deployToServer(serviceName, serverConfig) {
     echo "部署 ${serviceName} 到服务器 ${host}"
 
     // 使用SSH连接服务器执行部署
-    sshagent(['server-ssh-credentials']) {
+    sshagent(['deploy-server-key']) {
         sh """
             # 上传部署包
             scp -P ${port} -o StrictHostKeyChecking=no \
