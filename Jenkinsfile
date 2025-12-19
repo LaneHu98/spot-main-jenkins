@@ -25,7 +25,8 @@ pipeline {
 
                     // 读取服务配置
                     def servicesConfig = readJSON file: 'jenkins/configs/services.json'
-                    env.SERVICES_TO_DEPLOY = SERVICE_NAME == 'ALL' ? servicesConfig.services : [SERVICE_NAME]
+                    def allServices = servicesConfig.services as String[]
+                    env.SERVICES_TO_DEPLOY = params.SERVICE_NAME == 'ALL' ? allServices : [params.SERVICE_NAME]
                 }
             }
         }
