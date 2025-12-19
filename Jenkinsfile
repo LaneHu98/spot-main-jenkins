@@ -110,9 +110,9 @@ pipeline {
                             echo "开始构建服务: ${serviceName}，对应目录: ${serviceDir}"
                             dir("${serviceDir}/${serviceName}") {
                                 if (params.SKIP_TESTS) {
-                                    sh "mvn clean package -DskipTests"
+                                    sh "mvn clean package spring-boot:repackage -DskipTests"
                                 } else {
-                                    sh "mvn clean package"
+                                    sh "mvn clean package spring-boot:repackage"
                                 }
 
                                 // 归档制品
@@ -121,7 +121,7 @@ pipeline {
                                 // 生成部署包
                                 sh """
                                     mkdir -p ${WORKSPACE}/deploy-packages/${serviceName}
-                                    cp target/*.jar ${WORKSPACE}/deploy-packages/${serviceName}/
+                                    cp ../../deploy/*.jar ${WORKSPACE}/deploy-packages/${serviceName}/
                                     cp src/main/resources/application-prod.properties ${WORKSPACE}/deploy-packages/${serviceName}/ 2>/dev/null || true
                                 """
                             }
