@@ -193,7 +193,7 @@ def deployToServer(serviceName, serverConfig) {
             ssh -p ${port} -o StrictHostKeyChecking=no ec2-user@${host} << 'ENDSSH'
                 cd /home/ec2-user/nokex-app
                 # 执行部署脚本并记录PID
-                ./"${rs}".sh tmp > "/tmp/deploy_${serviceName}.log" 2>&1 &
+                sudo ./"${rs}".sh tmp > "/tmp/deploy_${serviceName}.log" 2>&1 &
                 DEPLOY_PID=\$!
 
                 # 等待30秒让Java应用启动
