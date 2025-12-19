@@ -180,6 +180,10 @@ def deployToServer(serviceName, serverConfig) {
     // 使用SSH连接服务器执行部署
     sshagent(['deploy-server-key']) {
         sh """
+            # 创建目标目录（如果不存在）
+            ssh -p ${port} -o StrictHostKeyChecking=no ec2-user@${host} \\
+                "mkdir -p ${deployPath}/tmp"
+                
             # 上传部署包
             scp -P ${port} -o StrictHostKeyChecking=no \\
                 ${WORKSPACE}/deploy-packages/${serviceName}/* \\
