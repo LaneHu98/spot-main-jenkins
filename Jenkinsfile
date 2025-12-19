@@ -24,6 +24,12 @@ pipeline {
                     echo "构建版本: ${BUILD_VERSION}"
                     echo "Git分支: ${BRANCH}"
 
+                    // 备份配置文件到临时位置
+                    sh '''
+                        mkdir -p /tmp/jenkins-configs
+                        cp -r jenkins/configs/* /tmp/jenkins-configs/
+                    '''
+
                     // 读取服务配置
                     def servicesConfig = readJSON file: 'jenkins/configs/services.json'
                     def allServices = servicesConfig.collect { it.toString() }
@@ -58,6 +64,12 @@ pipeline {
                         credentialsId: 'github-jenkins-key'
                     ]]
                 ])
+
+                // 恢复配置文件
+                sh '''
+                    mkdir -p jenkins/configs
+                    cp -r /tmp/jenkins-configs/* jenkins/configs/
+                '''
 
                 // 保存提交信息
                 sh '''
