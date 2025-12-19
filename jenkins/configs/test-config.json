@@ -5,12 +5,90 @@
         {
           "host": "13.112.127.198",
           "port": 22,
-          "deployPath": "/home/ec2-user/nokex-app",
+          "deployPath": "/home/ec2-user/to_deploy",
           "restartScript": "restart-nokex-api-gateway",
-          "projectPath": "limbo-gateway",
+          "appPort": 8081
+        },
+        {
+          "host": "54.238.33.73",
+          "port": 22,
+          "deployPath": "/home/ec2-user/to_deploy",
+          "restartScript": "restart-nokex-api-gateway",
+          "appPort": 8081
+        },
+        {
+          "host": "54.249.48.142",
+          "port": 22,
+          "deployPath": "/home/ec2-user/to_deploy",
+          "restartScript": "restart-nokex-api-gateway",
           "appPort": 8081
         }
       ]
     }
+  },
+  "limbo-p2p-service": {
+    "servers": [
+      {
+        "host": "13.112.127.198",
+        "port": 22,
+        "deployPath": "/home/ec2-user/to_deploy",
+        "restartScript": "restart-nokex-p2p-service",
+        "appPort": 8081
+      },
+      {
+        "host": "54.238.33.73",
+        "port": 22,
+        "deployPath": "/home/ec2-user/to_deploy",
+        "restartScript": "restart-nokex-p2p-gateway",
+        "appPort": 8081
+      }
+    ]
+  },
+  "limbo-user-service": {
+    "servers": [
+      {
+        "host": "13.112.127.198",
+        "port": 22,
+        "deployPath": "/home/ec2-user/to_deploy",
+        "restartScript": "restart-nokex-user-service",
+        "appPort": 8081
+      },
+      {
+        "host": "54.238.33.73",
+        "port": 22,
+        "deployPath": "/home/ec2-user/to_deploy",
+        "restartScript": "restart-nokex-user-gateway",
+        "appPort": 8081
+      },
+      {
+        "host": "54.249.48.142",
+        "port": 22,
+        "deployPath": "/home/ec2-user/to_deploy",
+        "restartScript": "restart-nokex-user-gateway",
+        "appPort": 8081
+      }
+    ]
+  },
+  "limbo-active-service": {
+    "servers": [
+      {
+        "host": "54.249.48.142",
+        "port": 22,
+        "deployPath": "/home/ec2-user/to_deploy",
+        "restartScript": "restart-nokex-active-gateway",
+        "appPort": 8081
+      }
+    ]
+  },
+  "limbo-agent-service": {
+    "servers": [
+      {
+        "host": "54.249.48.142",
+        "port": 22,
+        "deployPath": "/home/ec2-user/to_deploy",
+        "restartScript": "restart-nokex-agent-gateway",
+        "appPort": 8081
+      }
+    ]
   }
 }

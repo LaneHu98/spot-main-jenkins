@@ -181,13 +181,13 @@ def deployToServer(serviceName, serverConfig) {
     sshagent(['deploy-server-key']) {
         sh """
             # 上传部署包
-            scp -P ${port} -o StrictHostKeyChecking=no \
-                ${WORKSPACE}/deploy-packages/${serviceName}/* \
-                jenkins@${host}:${deployPath}/tmp/
+            scp -P ${port} -o StrictHostKeyChecking=no \\
+                ${WORKSPACE}/deploy-packages/${serviceName}/* \\
+                ec2-user@${host}:${deployPath}/tmp/
 
             # 执行远程部署脚本
-            ssh -p ${port} -o StrictHostKeyChecking=no jenkins@${host} \
-                "bash ${deployPath}/${rs}.sh ${serviceName} ${BUILD_VERSION}"
+            ssh -p ${port} -o StrictHostKeyChecking=no ec2-user@${host} \\
+                "sudo bash ${deployPath}/${rs}.sh tmp"
         """
     }
 }
