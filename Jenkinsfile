@@ -181,8 +181,11 @@ def deployToServer(serviceName, serverConfig) {
     sshagent(['deploy-server-key']) {
         sh """
             # 创建目标目录（如果不存在）
-            ssh -p ${port} -o StrictHostKeyChecking=no ec2-user@${host} \\
-                "sudo mkdir -p ${deployPath}/tmp"
+            ssh -p 22 -o StrictHostKeyChecking=no ec2-user@54.238.33.73 '
+                sudo mkdir -p ${deployPath}/tmp
+                sudo chown -R ec2-user:ec2-user ${deployPath}
+                sudo chmod 755 ${deployPath}
+            '
                 
             # 上传部署包
             scp -P ${port} -o StrictHostKeyChecking=no \\
