@@ -90,7 +90,12 @@ pipeline {
                     servicesToDeploy.each { serviceName ->
                         stage("构建 ${serviceName}") {
                             echo "开始构建服务: ${serviceName}"
-                            dir("services/${serviceName}") {
+                            def servers = DEPLOY_CONFIG.services[serviceName]?.servers ?: []
+                            if (servers.isEmpty()) {
+                                echo "警告: ${serviceName} 在 test 环境中没有配置服务器"
+                                return
+                            }
+                            dir("${server.projectPath}/${serviceName}") {
                                 if (params.SKIP_TESTS) {
                                     sh "mvn clean package -DskipTests"
                                 } else {

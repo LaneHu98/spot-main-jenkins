@@ -7,6 +7,7 @@
           "port": 22,
           "deployPath": "/home/ec2-user/nokex-app",
           "restartScript": "restart-nokex-api-gateway",
+          "projectPath": "limbo-gateway",
           "appPort": 8081
         }
       ]
