@@ -182,7 +182,7 @@ def deployToServer(serviceName, serverConfig) {
         sh """
             # 创建目标目录（如果不存在）
             ssh -p ${port} -o StrictHostKeyChecking=no ec2-user@${host} \\
-                "mkdir -p ${deployPath}/tmp"
+                "sudo mkdir -p ${deployPath}/tmp"
                 
             # 上传部署包
             scp -P ${port} -o StrictHostKeyChecking=no \\
@@ -210,6 +210,7 @@ def deployToServer(serviceName, serverConfig) {
                 fi
 
                 echo "部署完成，应用已启动。"
+
 ENDSSH
         """
     }
