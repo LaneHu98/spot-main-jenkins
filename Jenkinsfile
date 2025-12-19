@@ -110,9 +110,9 @@ pipeline {
                             echo "开始构建服务: ${serviceName}，对应目录: ${serviceDir}"
                             dir("${serviceDir}/${serviceName}") {
                                 if (params.SKIP_TESTS) {
-                                    sh "mvn clean package spring-boot:repackage -DskipTests"
+                                    sh "mvn clean package -DskipTests"
                                 } else {
-                                    sh "mvn clean package spring-boot:repackage"
+                                    sh "mvn clean package"
                                 }
 
                                 // 归档制品
@@ -121,7 +121,7 @@ pipeline {
                                 // 生成部署包
                                 sh """
                                     mkdir -p ${WORKSPACE}/deploy-packages/${serviceName}
-                                    cp ../../deploy/*.jar ${WORKSPACE}/deploy-packages/${serviceName}/
+                                    cp target/*.jar ${WORKSPACE}/deploy-packages/${serviceName}/
                                     cp src/main/resources/application-prod.properties ${WORKSPACE}/deploy-packages/${serviceName}/ 2>/dev/null || true
                                 """
                             }
@@ -190,8 +190,21 @@ def deployToServer(serviceName, serverConfig) {
                 ec2-user@${host}:${deployPath}/tmp/
 
             # 执行远程部署脚本
-            ssh -p ${port} -o StrictHostKeyChecking=no ec2-user@${host} \\
-                "sudo bash /home/ec2-user/nokex-app/${rs}.sh tmp"
+            ssh -p ${port} -o StrictHostKeyChecking=no ec2-user@${host} /bin/bash << EOF
+                # 进入脚本目录并执行，& 放入后台，获取进程 ID
+                cd ${deployPath}
+                ./${rs}.sh ${serviceName} ${BUILD_VERSION} > /tmp/deploy_${serviceName}.log 2>&1 &
+                SCRIPT_PID=\$!
+
+                # 等待一小段时间，让脚本内部的 Java 进程有机会启动
+                sleep 30
+
+                # 现在，找到由这个脚本启动的 tail -f 进程（SCRIPT_PID 的子进程）并终止它
+                # pkill 命令专门用于终止进程，-P 指定父进程
+                pkill -P \$SCRIPT_PID -f "tail -f" || true
+
+                echo "部署脚本已启动，tail -f 进程已被清理。"
+            EOF
         """
     }
 }
