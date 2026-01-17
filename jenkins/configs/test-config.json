@@ -197,6 +197,17 @@
           "appPort": 8081
         }
       ]
+    },
+    "limbo-admin-service": {
+      "servers": [
+        {
+          "host": "13.114.21.2",
+          "port": 22,
+          "deployPath": "/home/ec2-user/to_deploy",
+          "restartScript": "restart-admin-service",
+          "appPort": 8081
+        }
+      ]
     }
   }
 }
