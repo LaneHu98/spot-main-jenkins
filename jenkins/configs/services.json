@@ -13,5 +13,6 @@
   "limbo-p2p-service",
   "limbo-persission-service",
   "limbo-robot-normal-service",
-  "limbo-user-service"
+  "limbo-user-service",
+  "limbo-admin-service"
 ]
