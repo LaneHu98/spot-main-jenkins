@@ -11,7 +11,7 @@
   "limbo-open-api-service": "limbo-service/",
   "limbo-option-service": "limbo-service/",
   "limbo-p2p-service": "limbo-service/",
-  "limbo-persission-service": "limbo-service/",
+  "limbo-permission-service": "limbo-service/",
   "limbo-robot-normal-service": "limbo-service/",
   "limbo-user-service": "limbo-service/",
   "limbo-admin-service": "limbo-service/"
